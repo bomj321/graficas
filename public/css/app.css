@@ -1,0 +1,14 @@
+/***STYLE FOR TABLE***/
+
+ .withscroll {
+            width: 100%;
+            height: 400px;
+            overflow-x: scroll;
+            white-space: nowrap;
+}
+
+.seccion-bottom{
+	margin-top: 50px;
+}
+
+/***STYLE FOR TABLE***/
