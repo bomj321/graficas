@@ -22,7 +22,7 @@ $( "#form-graficas" ).submit(function(e) {
             success:function(data){
             	$( "#mensaje-bienvenida" ).hide();
 				tablaServicios(data.services);
-				tablaGraficaServicios();
+				tablaGraficaServicios(data.details);
 				graficaServicios();
 				tablaGraficaVehiculos();
 				graficaVehiculos();
@@ -76,7 +76,9 @@ $("#container-tabla").html(plantilla_tabla);
 }
 
 
-function tablaGraficaServicios(){
+function tablaGraficaServicios($details){
+
+	var details = $details;
 		/*********PLANTILLA PARA LA TABLA************/
 var plantilla_tabla = `
 
@@ -88,42 +90,15 @@ var plantilla_tabla = `
 						<th>Venta</th>						
 					</tr>
 
+				${details.map(detail => `
+ 						    <tr>
+		 						<td>${detail.name}</td>
+							    <td>${detail.service_count}</td> 							   
+							    <td>${detail.amount_service}$</td>							    
+	 			            </tr>
 
-					<tr>
-						<td>Lavado</td>
-						<td>44</td>
-						<td>$158.696</td>						
-					</tr>
-
-					<tr>
-						<td>Brillado</td>
-						<td>45</td>
-						<td>$785.963</td>						
-					</tr>
-
-					<tr>
-						<td>Grafitado</td>
-						<td>47</td>
-						<td>$896.213</td>						
-					</tr>
-
-					<tr>
-						<td>Motor</td>
-						<td>46</td>
-						<td>$569.487</td>						
-					</tr>
-
-					<tr>
-						<td>OverHaul</td>
-						<td>89</td>
-						<td>$487.315</td>						
-					</tr>
-
-					<tr>
-						<td>Aceite</td>
-						<td>90</td>
-						<td>$174.785</td>						
-					</tr>					
+	 				`).join('')}
+							
 		</table>
 	</div>	
 `

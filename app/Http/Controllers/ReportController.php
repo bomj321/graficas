@@ -31,15 +31,26 @@ class ReportController extends Controller
                      ->get();
 
 
-       /* $user_info = DB::table('usermetas')
-                 ->select('browser', DB::raw('count(*) as total'))
-                 ->groupBy('browser')
-                 ->get();  */           
+          $services_id = array();
+            foreach($services as $service) {
+                 $services_id[] = $service->id;
+             }
+
+
+        $services_detail = DB::table('cw_service_detail')
+                 ->select(DB::raw('count(*) as service_count,name,SUM(amount_service) as amount_service'))
+                 ->whereIn('service_id', $services_id)
+                 ->groupBy('name')
+                 ->orderBy('service_count', 'desc')
+                 ->limit(6)
+                 ->get();           
 
 
 
     	$data = [            
-              'services'     => $services
+              'services'         => $services,
+              'services_id'      => $services_id,
+              'details'          => $services_detail
             ];
 
            return response()->json($data);
