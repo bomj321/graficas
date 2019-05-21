@@ -21,13 +21,24 @@ $( "#form-graficas" ).submit(function(e) {
            // data: {"id_inventory": value},
             success:function(data){
             	$( "#mensaje-bienvenida" ).hide();
+
+            	Highcharts.setOptions({ // Apply to all charts
+    chart: {
+        events: {
+            beforePrint: function () {
+                
+            }
+        }
+    }
+});
+       	
 				tablaServicios(data.services);
 				tablaGraficaServicios(data.details);
-				graficaServicios();
-				tablaGraficaVehiculos();
-				graficaVehiculos();
-				tablaTotal();
-				graficaTotal(); 
+				graficaServicios(data.details);
+				tablaGraficaVehiculos(data.type_vehicles);
+				graficaVehiculos(data.type_vehicles);
+				tablaTotal(data.total_amount);
+				graficaTotal(data.total_amount_services); 				    
             }
         });
 
@@ -43,8 +54,16 @@ function tablaServicios($services){
 
 	var services = $services;
 
+	if (services === 'Sin Resultados') {
 
-var plantilla_tabla = `
+		var plantilla_tabla = `
+			
+			<center class="text-danger" style="margin-top:25%"><h5><strong>No Hay resultados</strong</h5></center>	
+		`
+	}else{
+
+
+		var plantilla_tabla = `
 
 	<div class="table-responsive withscroll">
 			<table class="table table-striped" id="report_table">					
@@ -70,17 +89,25 @@ var plantilla_tabla = `
 		     </table>
 	</div>	
 `
+	}
+
 $("#container-tabla").html(plantilla_tabla);
 
-/*********PLANTILLA PARA LA TABLA************/  
 }
 
 
 function tablaGraficaServicios($details){
 
 	var details = $details;
-		/*********PLANTILLA PARA LA TABLA************/
-var plantilla_tabla = `
+
+
+if (details === 'Sin Resultados') {
+
+		var plantilla_tabla = `<center class="text-danger" style="margin-top:25%"><h5><strong>No Hay resultados</strong</h5></center>`
+	}else{
+
+
+		var plantilla_tabla = `
 
 	<div class="table-responsive withscroll">
 			<table class="table table-striped">					
@@ -102,190 +129,215 @@ var plantilla_tabla = `
 		</table>
 	</div>	
 `
+	}
+
+
+
 $("#container-tabla-ultimos-servicios").html(plantilla_tabla);
 
-/*********PLANTILLA PARA LA TABLA************/  
 
 }
 
 
-function graficaServicios(){
-	Highcharts.chart('container-ultimos-servicios', {
-		    chart: {
-		        type: 'column'
-		    },
-		    title: {
-		        text: 'Lavados y Ventas'
-		    }/*,
-		    subtitle: {
-		        text: 'Costos de los lavados contra ventas'
-		    }*/,
-		    xAxis: {
-		        categories: [
-		            'Lavado',
-		            'Brillado',
-		            'Grafitado',
-		            'Motor',
-		            'Overhaul',
-		            'Aceite',		            
-		        ],
-		        crosshair: true
-		    },
-		    yAxis: {
-		        min: 0,
-		        title: {
-		            text: 'Costos'
-		        }
-		    },
-		    tooltip: {
-		        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-		        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-		            '<td style="padding:0"><b>{point.y:.1f} $</b></td></tr>',
-		        footerFormat: '</table>',
-		        shared: true,
-		        useHTML: true
-		    },
-		    plotOptions: {
-		        column: {
-		            pointPadding: 0.2,
-		            borderWidth: 0
-		        }
-		    },
-		    series: [{
-		        name: 'Grafico de los Lavados',
+function graficaServicios($details){
+
+var details = $details;
 
 
-		        data: [
-		        {y:  49.9, color: 'red'}, 
-		        {y:  71.5, color: 'blue'}, 
-		        {y:  106.4, color: 'green'}, 
-		        {y:  129.2, color: 'black'}, 
-		        {y:  144.0, color: 'orange'}, 
-		        {y:  176.0, color: 'silver'},
-		      
-		        ]
+if (details === 'Sin Resultados') {
 
-		    }]
-	});
+
+if (typeof Highcharts.chart('container-ultimos-servicios', {}) !== 'undefined') {
+		Highcharts.chart('container-ultimos-servicios', {}).destroy();
+
+	}
+
+ }else{
+
+ 	 var categorias = new Array();
+	            var montos     = new Array();
+
+	            $.each(details,function(key, value){
+	                categorias.push(value.name);
+	                valor = Number(value.amount_service);
+	                montos.push(valor);
+	            });
+
+
+
+		Highcharts.chart('container-ultimos-servicios', {
+			    chart: {
+			        type: 'column'
+			    },
+			    title: {
+			        text: 'Cantidad de Ventas'
+			    }/*,
+			    subtitle: {
+			        text: 'Costos de los lavados contra ventas'
+			    }*/,
+			    xAxis: {
+			        categories: categorias,
+			        crosshair: true
+			    },
+			    yAxis: {
+			        min: 0,
+			        title: {
+			            text: 'Costos'
+			        }
+			    },
+			    tooltip: {
+			        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+			        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+			            '<td style="padding:0"><b>{point.y:.1f} $</b></td></tr>',
+			        footerFormat: '</table>',
+			        shared: true,
+			        useHTML: true
+			    },
+			    plotOptions: {
+			        column: {
+			            pointPadding: 0.2,
+			            borderWidth: 0
+			        }
+			    },
+			    series: [{
+			        name: 'Costos',
+			        data: montos
+
+			    }]
+		});
+
+ }
+			   
+	    
 }
 
 
 
-function tablaGraficaVehiculos(){
-		/*********PLANTILLA PARA LA TABLA************/
-var plantilla_tabla = `
+function tablaGraficaVehiculos($type_vehicles){
 
-	<div class="table-responsive withscroll">
-			<table class="table table-striped">					
-					<tr>
-						<th>Marca</th>
-						<th>Cant.</th>
-					</tr>
+	var type_vehicles = $type_vehicles;
 
 
-					<tr>
-						<td>Lavado</td>
-						<td>44</td>
-					</tr>
+	if (type_vehicles === 'Sin Resultados') {
 
-					<tr>
-						<td>Brillado</td>
-						<td>45</td>
-					</tr>
+		var plantilla_tabla = `<center class="text-danger" style="margin-top:25%"><h5><strong>No Hay resultados</strong</h5></center>`
+	}else{
 
-					<tr>
-						<td>Grafitado</td>
-						<td>47</td>
-					</tr>
+		var plantilla_tabla = `
 
-					<tr>
-						<td>Motor</td>
-						<td>46</td>
-					</tr>
+			<div class="table-responsive withscroll">
+					<table class="table table-striped">					
+							<tr>
+								<th>Marca</th>
+								<th>Cant.</th>
+							</tr>
 
-					<tr>
-						<td>OverHaul</td>
-						<td>89</td>
-					</tr>
 
-					<tr>
-						<td>Aceite</td>
-						<td>90</td>
-					</tr>					
-		</table>
-	</div>	
-`
+						${type_vehicles.map(type_vehicle => `
+							<tr>
+			 						<td>${type_vehicle.vehicle_name}</td>
+								    <td>${type_vehicle.type_vehicle_count}</td> 							   
+		 			            </tr>
+
+		 				`).join('')}		
+				</table>
+			</div>	
+		 `
+	}
+
+
 $("#container-tabla-vehiculos-solicitados").html(plantilla_tabla);
 
-/*********PLANTILLA PARA LA TABLA************/  
 
 }
 
 
-function graficaVehiculos(){
-	Highcharts.chart('container-vehiculos-solicitados', {
-		    chart: {
-		        type: 'column'
-		    },
-		    title: {
-		        text: 'Vehiculos mas Solicitados'
-		    }/*,
-		    subtitle: {
-		        text: 'Costos de los lavados contra ventas'
-		    }*/,
-		    xAxis: {
-		        categories: [
-		            'Motos',
-		            'Autos',
-		            'Minivan',
-		            'Camion',
-		            'Camiones',
-		        ],
-		        crosshair: true
-		    },
-		    yAxis: {
-		        min: 0,
-		        title: {
-		            text: 'Costos'
-		        }
-		    },
-		    tooltip: {
-		        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-		        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-		            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
-		        footerFormat: '</table>',
-		        shared: true,
-		        useHTML: true
-		    },
-		    plotOptions: {
-		        column: {
-		            pointPadding: 0.2,
-		            borderWidth: 0
-		        }
-		    },
-		    series: [{
-		        name: 'Vehiculos',
+function graficaVehiculos($type_vehicles){
 
 
-		        data: [
-		        {y:  50, color: 'red'}, 
-		        {y:  150, color: 'blue'}, 
-		        {y:  180, color: 'green'}, 
-		        {y:  135, color: 'black'}, 
-		        {y:  137, color: 'orange'}, 
-		      
-		        ]
+	var type_vehicles = $type_vehicles;
 
-		    }]
-	});
+
+if (type_vehicles === 'Sin Resultados') {
+
+
+if (typeof Highcharts.chart('container-vehiculos-solicitados', {}) !== 'undefined') {
+		Highcharts.chart('container-vehiculos-solicitados', {}).destroy();
+
+	}
+
+
+ }else{
+ 		var categorias   = new Array();
+			            var cantidades     = new Array();
+
+			            $.each(type_vehicles,function(key, value){
+			                categorias.push(value.vehicle_name);
+			                valor = Number(value.type_vehicle_count);
+			                cantidades.push(valor);
+			            });
+
+
+
+				Highcharts.chart('container-vehiculos-solicitados', {
+					    chart: {
+					        type: 'column'
+					    },
+					    title: {
+					        text: 'Vehiculos mas Solicitados por Sucursal'
+					    }/*,
+					    subtitle: {
+					        text: 'Costos de los lavados contra ventas'
+					    }*/,
+					    xAxis: {
+					        categories: categorias,
+					        crosshair: true
+					    },
+					    yAxis: {
+					        min: 0,
+					        title: {
+					            text: 'Tipos de Vehiculos'
+					        }
+					    },
+					    tooltip: {
+					        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+					        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+					            '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+					        footerFormat: '</table>',
+					        shared: true,
+					        useHTML: true
+					    },
+					    plotOptions: {
+					        column: {
+					            pointPadding: 0.2,
+					            borderWidth: 0
+					        }
+					    },
+					    series: [{
+					        name: 'Vehiculos',
+					        data: cantidades
+
+					    }]
+				});
+
+
+ }
+
+	       
 }
 
 
 
 
-function tablaTotal(){
+function tablaTotal($total_amount){
+
+	var total_amount = $total_amount;
 		/*********PLANTILLA PARA LA TABLA************/
-var plantilla_tabla = `
+if (total_amount === 'Sin Resultados') {
+
+		var plantilla_tabla = `<center class="text-danger" style="margin-top:25%"><h5><strong>No Hay resultados</strong</h5></center>`
+	}else{
+		var plantilla_tabla = `
 
 	<div class="table-responsive withscroll">
 			<table class="table table-striped">					
@@ -294,31 +346,17 @@ var plantilla_tabla = `
 						<th>Valor</th>
 					</tr>
 
-
 					<tr>
 						<td>Venta</td>
-						<td class="text-primary">500.045$</td>
+						<td class="text-primary">${total_amount[0].amount_service_total} $</td>
 					</tr>
-
-					<tr>
-						<td>Pago a Lavador</td>
-						<td class="text-danger">788.546$</td>
-					</tr>
-
-					<tr>
-						<td>Pago a Mecanico</td>
-						<td class="text-danger">324.793$</td>
-					</tr>
-
-					<tr>
-						<td></td>
-						<td class="text-primary">7.785.875$</td>
-					</tr>
-
 									
 		</table>
 	</div>	
 `
+}
+
+
 $("#container-tabla-total").html(plantilla_tabla);
 
 /*********PLANTILLA PARA LA TABLA************/  
@@ -326,64 +364,74 @@ $("#container-tabla-total").html(plantilla_tabla);
 }
 
 
-function graficaTotal(){
-	Highcharts.chart('container-total', {
-		    chart: {
-		        type: 'column'
-		    },
-		    title: {
-		        text: 'Ganancias Totales'
-		    }/*,
-		    subtitle: {
-		        text: 'Costos de los lavados contra ventas'
-		    }*/,
-		    xAxis: {
-		        categories: [
-		            'Lavado',
-		            'Brillado',
-		            'Grafitado',
-		            'Motor',
-		            'Overhaul',
-		            'Aceite',	
-		        ],
-		        crosshair: true
-		    },
-		    yAxis: {
-		        min: 0,
-		        title: {
-		            text: 'Costos'
-		        }
-		    },
-		    tooltip: {
-		        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-		        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-		            '<td style="padding:0"><b>{point.y:.1f} $</b></td></tr>',
-		        footerFormat: '</table>',
-		        shared: true,
-		        useHTML: true
-		    },
-		    plotOptions: {
-		        column: {
-		            pointPadding: 0.2,
-		            borderWidth: 0
-		        }
-		    },
-		    series: [{
-		        name: 'Vehiculos',
+function graficaTotal($total_amount_services){
+
+	var total_amount_services = $total_amount_services;
+
+if (total_amount_services === 'Sin Resultados') {
+
+	if (typeof Highcharts.chart('container-total', {}) !== 'undefined') {
+		Highcharts.chart('container-total', {}).destroy();
+
+	}
 
 
-		        data: [
-		        {y:  100000, color: 'red'}, 
-		        {y:  150000, color: 'blue'}, 
-		        {y:  50000, color: 'green'}, 
-		        {y:  35000, color: 'black'}, 
-		        {y:  200000, color: 'orange'}, 
-		        {y:  200000, color: 'silver'}, 
-		      
-		        ]
+ }else{ 
 
-		    }]
-	});
+		 	   var categorias   = new Array();
+				            var cantidades     = new Array();
+
+				            $.each(total_amount_services,function(key, value){
+				                categorias.push(value.name);
+				                valor = Number(value.amount_service);
+				                cantidades.push(valor);
+				            });
+
+					Highcharts.chart('container-total', {
+						    chart: {
+						        type: 'column'
+						    },
+						    title: {
+						        text: 'Ganancias Totales por Sucursal'
+						    }/*,
+						    subtitle: {
+						        text: 'Costos de los lavados contra ventas'
+						    }*/,
+						    xAxis: {
+						        categories: categorias,
+						        crosshair: true
+						    },
+						    yAxis: {
+						        min: 0,
+						        title: {
+						            text: 'Costos'
+						        }
+						    },
+						    tooltip: {
+						        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+						        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+						            '<td style="padding:0"><b>{point.y:.1f} $</b></td></tr>',
+						        footerFormat: '</table>',
+						        shared: true,
+						        useHTML: true
+						    },
+						    plotOptions: {
+						        column: {
+						            pointPadding: 0.2,
+						            borderWidth: 0
+						        }
+						    },
+						    series: [{
+						        name: 'Servicio',
+						        data: cantidades
+
+						    }]
+					});
+
+
+ 	}
+
+		
 }
 
 /*******************************FUNCIONES*********************************/    
