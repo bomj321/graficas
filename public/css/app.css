@@ -11,16 +11,16 @@
 	margin-top: 50px;
 }
 
-table {
+/*table {
   table-layout: fixed;
   border-collapse: collapse;
   width: 100%;
-}
+}*/
 
-td {
+/*td {
   min-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+}*/
 
 /***STYLE FOR TABLE***/
