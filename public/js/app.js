@@ -32,7 +32,7 @@ $( "#form-graficas" ).submit(function(e) {
     }
 });
        	
-				tablaServicios(data.services);
+				tablaServicios(data.services,data.fecha1,data.fecha2,data.sucursal);
 				tablaGraficaServicios(data.details);
 				graficaServicios(data.details);
 				tablaGraficaVehiculos(data.type_vehicles);
@@ -49,10 +49,14 @@ $( "#form-graficas" ).submit(function(e) {
 
 /*******************************FUNCIONES*********************************/
 
-function tablaServicios($services){
+function tablaServicios($services,$fecha1,$fecha2,$sucursal){
 
 
 	var services = $services;
+
+	var fecha1   = $fecha1;
+	var fecha2   = $fecha2;
+	var sucursal = $sucursal;
 
 	if (services === 'Sin Resultados') {
 
@@ -66,6 +70,8 @@ function tablaServicios($services){
 		var plantilla_tabla = `
 
 	<div class="table-responsive withscroll">
+			<a href="reports/exportar/${fecha1}/${fecha2}/${sucursal}" target="_blank" class="btn btn-success" id='button-exportar' style="margin-bottom:10px;">Exportar a EXCEL</a>
+
 			<table class="table table-striped" id="report_table">					
 					<tr>
 						<th>Fecha</th>

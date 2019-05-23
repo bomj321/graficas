@@ -21,4 +21,7 @@ Route::get('/', 'ReportController@index')
 Route::post('reports', 'ReportController@grafics')
 	->name('reports.grafics');
 
+Route::get('reports/exportar/{fecha1}/{fecha2}/{sucursal}', 'ReportController@export')
+	->name('reports.export');	
+
 /******ROUTE FOR AJAX CALLS******/

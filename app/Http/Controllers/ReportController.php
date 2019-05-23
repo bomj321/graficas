@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
+
 
 class ReportController extends Controller
 {
@@ -13,12 +16,13 @@ class ReportController extends Controller
         $sites = DB::table('inv_sites')
         ->get();
 
-    	return view('reports.index',compact('sites'));
+        return view('reports.index',compact('sites'));
 
     }
 
 
-    public function grafics(Request $request){
+    public function grafics(Request $request)
+    {
 
 
 /***************************TABLA DE SERVICOS Y GRAFICO DE SERVICIOS MAS SOLICITADOS**************************/
@@ -148,7 +152,10 @@ $total_amount = DB::table('cw_service_detail')
 /****************************GRAFICO DE GANANCIAS TOTALES**************************/
 
 
-    	$data = [            
+        $data = [    
+              'fecha1'                => $request->fecha1, 
+              'fecha2'                => $request->fecha2, 
+              'sucursal'              => $request->sucursal,      
               'services'              => $services,
               'details'               => $services_detail,
               'type_vehicles'         => $type_vehicles,
@@ -159,4 +166,83 @@ $total_amount = DB::table('cw_service_detail')
            return response()->json($data);
 
     }
+
+
+
+    public function export(Request $request)
+    {
+
+/***************************TABLA DE SERVICOS Y GRAFICO DE SERVICIOS MAS SOLICITADOS**************************/
+
+
+        $services = DB::table('cw_service')
+                     ->leftJoin('cliente', 'cw_service.client_id', '=', 'cliente.idcliente')
+                     ->leftJoin('cw_type_vehicle', 'cw_service.type_vehicle', '=', 'cw_type_vehicle.id')
+                     ->leftJoin('marca', 'cw_service.brand_id', '=', 'marca.idmarca')
+                     ->whereBetween('date_service', [$request->fecha1, $request->fecha2])
+                     ->where('site_id', $request->sucursal)
+                     ->select('cw_service.*','cliente.full_name AS full_name','cw_type_vehicle.name AS vehicle_name','marca.nombre AS brand_name')
+                     ->get();
+
+
+
+/************INSERTAR EN UN ARRAY LOS ID CORRESPONDIENTES A LOS SERVICIOS***************************/
+
+          $services_array = array();
+            foreach($services as $service) {
+                 $services_array[] = $service->id;
+             }
+/************INSERTAR EN UN ARRAY LOS ID CORRESPONDIENTES A LOS SERVICIOS***************************/
+           
+   /*return response()->json($services_array);  
+   
+   die();  */    
+   
+  $excel_name = 'Report'.time();
+
+               Excel::create($excel_name, function($excel) use($services) {
+
+                $excel->sheet('Sheet1', function($sheet) use($services) {
+                                     $sheet->loadView('reports.excel')
+                                     ->with(
+                                         'services', $services
+                                         );
+                    });
+
+                })->store('xls', storage_path('app/public'));
+        
+        $excel_name_extesion = $excel_name.'.xls';  
+        
+        //$url = Storage::url('app/public/'.$excel_name_extesion);
+        //echo $url;
+        
+       // $content = Storage::get($url);
+
+       /* $path = Storage::disk('public')->get($url);*/
+       // $file = Storage::get('app/public/'.$excel_name_extesion);
+        
+        //echo $file;
+        
+        /*$exists = Storage::disk('public')->exists('file.jpg');
+        die();*/
+
+        return response()->download(storage_path('app/public/'.$excel_name_extesion));
+        
+        
+        
+
+             /*$data = [    
+              
+              'success'          => true,
+              'path' => 'http://'.$_SERVER['SERVER_NAME'].'/exports/report.xlxs',
+            ];
+            
+             return response()->json($data);*/
+             
+               /*return  [
+                'success'    => true,
+                'path'       => storage_path('exports').'/Report.xls'
+            ];*/
+    }  
+
 }
